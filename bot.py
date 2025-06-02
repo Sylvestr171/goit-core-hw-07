@@ -1,8 +1,6 @@
 from random import choice
 from pathlib import Path
-
-
-print ('\n\tBOT\n')
+from classes import AddressBook,Record
 
 #Декоратор для обробки помилки ValueError, FileNotFoundError у функціях add_contact, change_contact
 def error_operator(func):
@@ -24,14 +22,22 @@ def parse_input(user_input:str) -> tuple[str,*tuple[str,...]]:
 
 #Функція отриманн контакту Команда: "add John 1234567890"
 @error_operator
-def add_contact(args:list[str], contacts:dict) -> str:
-    name, phone = args
-    contacts[name.lower().capitalize()] = phone
-    return "Contact added."
+def add_contact(args:list[str], contacts:AddressBook) -> str:
+    name, phone, *_ = args
+    name=name.lower().capitalize()
+    record = contacts.find(name)
+    message = "Contact updated."
+    if record is None:
+        record = Record(name)
+        contacts.add_record(record)
+        message = "Contact added."
+    if phone:
+        record.add_phone(phone)
+    return message
 
 #Функція зміни контакту  Команда: "change John 0987654321"
 @error_operator
-def change_contact(args:list[str], contacts:dict) -> str:
+def change_contact(args:list[str], contacts:AddressBook) -> str:
     name, phone = args
     if name.lower().capitalize() not in contacts.keys():
         return 'Contact is missing, please add it (add <name> <phone_namer>)! '
@@ -40,12 +46,12 @@ def change_contact(args:list[str], contacts:dict) -> str:
         return 'Contact updated.'
 
 #Функція показати контакти Команда: "phone John"
-def show_phone(args:list[str], contacts:dict) -> str:
+def show_phone(args:list[str], contacts:AddressBook) -> str:
     name = args[0].lower().capitalize()
     return contacts.get(name, 'The name is missing')
 
 #Функція виведення всієї адресної книги Команда: "all"
-def show_all(contacts: dict) -> str:
+def show_all(contacts:AddressBook) -> str:
     return '\n'.join(f"{key} => {value}" for key, value in contacts.items())
 
 #функція для вибору рандомної фрази для відповіді на hello
@@ -56,9 +62,31 @@ def get_random_phrase():
             phrase = file.readlines()
             return choice(phrase).strip()
 
+@error_operator
+def add_birthday(args, book:AddressBook):
+    name, birthday, *_ = args
+    name=name.lower().capitalize()
+    record = book.find(name)
+    message = "Contact updated."
+    if record is None:
+        record = Record(name)
+        book.add_record(record)
+        message = "Contact added."
+    if birthday:
+        record.add_birthday(birthday)
+    return message # реалізація
+
+@error_operator
+def show_birthday(args, book):
+    pass # реалізація
+
+@error_operator
+def birthdays(args, book):
+    pass # реалізація
+
 
 def main():
-    contacts = {}
+    book = AddressBook()
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
@@ -70,13 +98,19 @@ def main():
             case "hello":
                 print(get_random_phrase())
             case "add":
-                print(add_contact(args, contacts))
+                print(add_contact(args, book))
             case "change":
-                print(change_contact(args, contacts))
+                print(change_contact(args, book))
             case "phone":
-                print(show_phone(args, contacts))
+                print(show_phone(args, book))
             case "all":
-                print(show_all(contacts))
+                print(show_all(book))
+            case "add-birthday":
+                print(add_birthday(args, book))#реалізація
+            case "show-birthday":
+                pass # реалізація
+            case "birthdays":
+                pass  # реалізація
             case "help" | "?":
                 print("""The bot helps to work with the contact book.
                         Commands and functions:
