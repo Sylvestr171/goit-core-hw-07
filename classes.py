@@ -29,7 +29,8 @@ class Phone(Field):
         if len(value)==10 and value.isdigit():
             super().__init__(value)
         else:
-            raise ValueError(f"{ValueError}\nНе вірний формат номера")
+            # raise ValueError(f"{ValueError}\nНе вірний формат номера")
+            raise CastomError('Не вірний формат номера')
     
     def __eq__(self, other):
         eq = (self.value == other.value)
@@ -67,22 +68,33 @@ class Record:
 
     def edit_phone(self, old_phone, new_phone):
         if not self.find_phone(old_phone):
-            raise ValueError
+            raise CastomError('Is not such number for contact')
         self.add_phone(new_phone)
         self.remove_phone(old_phone)
     
         
 
     def find_phone(self, phone_for_search): 
-        result=next((ithem for ithem in self.phones if ithem == Phone(phone_for_search)), None) #
-        return result
+        for item in self.phones:
+            if item == Phone(phone_for_search):
+                return item
     
     def add_birthday(self, b_date):
         self.birthday = Birthday(b_date)
         return self.birthday
-
+    
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, birthday: {self.birthday}"
+        if self.birthday:
+            birthday=self.birthday
+        else:
+            birthday='не відомо'
+        if self.phones:
+            phone='; '.join(p.value for p in self.phones)
+            print(self.phones)
+        else: 
+            phone='телефон відсутній' 
+
+        return f"Contact name: {self.name.value}, phones: {phone}, birthday: {birthday}"
 
 #Клас для зберігання та управління записами.
 class AddressBook(UserDict):
@@ -118,9 +130,9 @@ class AddressBook(UserDict):
         today = date.today()
 
         for key, value in self.data.items():
-
+            
             birthday_this_year = value.birthday.value.replace(year=today.year)
-
+                
             if birthday_this_year < today:
                 birthday_this_year = value.birthday.value.replace(year=today.year+1)
 
