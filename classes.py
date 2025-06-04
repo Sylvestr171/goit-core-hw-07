@@ -76,8 +76,6 @@ class Record:
         self.add_phone(new_phone)
         self.remove_phone(old_phone)
     
-        
-
     def find_phone(self, phone_for_search :str) -> Union[Phone, None]: 
         for item in self.phones:
             if item == Phone(phone_for_search):
@@ -200,15 +198,18 @@ def main():
 
     # Знаходження та редагування телефону для John
     john = book.find("John")
-    print(f"{john}")
+    if john is not None:
+        print(f"{john}")
 
-    john.edit_phone("1234567890", "1111111111")
+        john.edit_phone("1234567890", "1111111111")
 
-    print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
+        print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
 
-    # Пошук конкретного телефону у записі John
-    found_phone = john.find_phone("5555555555")
-    print(f"{john.name}: {found_phone}")  # Виведення: John: 5555555555
+        # Пошук конкретного телефону у записі John
+        found_phone = john.find_phone("5555555555")
+        print(f"{john.name}: {found_phone}")  # Виведення: John: 5555555555
+    else: 
+        raise AttributeError(f"book.find('John') return NONE")
 
     # Видалення запису Jane
     book.delete("Jane")

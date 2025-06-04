@@ -44,7 +44,10 @@ def add_contact(args:list[str], contacts:AddressBook) -> str:
 #Функція зміни контакту  Команда: "change John 0987654321"
 @input_error
 def change_contact(args:list[str], book:AddressBook) -> str:
-    name, old_phone, new_phone = args
+    try:
+        name, old_phone, new_phone = args
+    except ValueError:
+        return f'"Uncnown command\nchange <name> <old_phone_namer> <new_phone_namer>" - change the phone number in the address book'
     if name.lower().capitalize() not in book.keys():
         massage = 'Contact is missing, please add it (add <name> <phone_namer>)! '
     else: 
@@ -70,6 +73,7 @@ def get_random_phrase() -> str:
             phrase = file.readlines()
             return choice(phrase).strip()
 
+#функція для додавання дати народження
 @input_error
 def add_birthday(args: list[str], book: AddressBook) -> str:
     try:
@@ -87,6 +91,7 @@ def add_birthday(args: list[str], book: AddressBook) -> str:
         record.add_birthday(birthday)
     return message
 
+#функція для виводу дати народження для вказаного контакту
 @input_error
 def show_birthday(args: list[str], book: AddressBook) -> Birthday:
     name = args[0].lower().capitalize()
@@ -99,6 +104,7 @@ def show_birthday(args: list[str], book: AddressBook) -> Birthday:
     else:
         raise CastomError("Контакт відсутній")
 
+#функціядля виводу дати привітання працівників на найближчий тиждень
 @input_error
 def birthdays(book: AddressBook) -> str:
     results=book.get_upcoming_birthdays()
@@ -142,7 +148,7 @@ def main() -> Union[str, None]:
                             "close" | "exit" - exit the program
                             "hello" - display a greeting
                             "add <name> <phone_namer>" - add a phone number to the address book
-                            "change <name> <phone_namer>" - change the phone number in the address book
+                            "change <name> <old_phone_namer> <new_phone_namer>" - change the phone number in the address book
                             "add-birthday <name> <DD.MM.YYYY>" - add a birthday to the address book
                             "show-birthday <name>" - show birthday
                             "phone <name>" - show the number
