@@ -1,6 +1,6 @@
 from collections import UserDict
 from datetime import datetime, date, timedelta
-from typing import Callable, Any, Union
+from typing import Any, Union
 
 #клас для кастомних помилок
 class CastomError(Exception):
