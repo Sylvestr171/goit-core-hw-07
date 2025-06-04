@@ -90,7 +90,6 @@ class Record:
             birthday='не відомо'
         if self.phones:
             phone='; '.join(p.value for p in self.phones)
-            print(self.phones)
         else: 
             phone='телефон відсутній' 
 

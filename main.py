@@ -11,8 +11,8 @@ def input_error(func):
             return "Give me correct name and phone please."
         except FileNotFoundError:
             return "How can I help you?"
-        except AttributeError:
-            return "No birthday on this week"
+        # except AttributeError:
+        #     return "No birthday on this week"
         except CastomError as e:
             return e
     return inner
