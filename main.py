@@ -2,17 +2,15 @@ from random import choice
 from pathlib import Path
 from classes import AddressBook,CastomError,Record
 
-#Декоратор для обробки помилки ValueError, FileNotFoundError у функціях add_contact, change_contact
+#Декоратор для обробки помилок
 def input_error(func):
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except ValueError:
-            return "Give me correct name and phone please."
+        except ValueError as e:
+            return e #"Give me correct name and phone please."
         except FileNotFoundError:
             return "How can I help you?"
-        # except AttributeError:
-        #     return "No birthday on this week"
         except CastomError as e:
             return e
     return inner
@@ -27,7 +25,10 @@ def parse_input(user_input:str) -> tuple[str,*tuple[str,...]]:
 #Функція отриманн контакту Команда: "add John 1234567890"
 @input_error
 def add_contact(args:list[str], contacts:AddressBook) -> str:
-    name, phone, *_ = args
+    try:
+        name, phone, *_ = args
+    except ValueError:
+        return f"Give me correct name and phone please."
     name=name.lower().capitalize()
     record = contacts.find(name)
     message = "Contact updated."
@@ -96,7 +97,11 @@ def show_birthday(args, book):
 
 @input_error
 def birthdays(book):
-    return book.get_upcoming_birthdays()
+    results=book.get_upcoming_birthdays()
+    if results:
+        return str(results)
+    else: 
+        return f'No birthdays for display'
 
 
 def main():
@@ -104,43 +109,46 @@ def main():
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
-        command, *args = parse_input(user_input)
-        match command:
-            case "close" | "exit":
-                print("Good bye!")
-                break
-            
-            case "hello":
-                print(get_random_phrase())
-            case "add":
-                print(add_contact(args, book))
-            case "change":
-                print(change_contact(args, book))
-            case "phone":
-                print(show_phone(args, book))
-            case "all":
-                print(show_all(book))
-            case "add-birthday":
-                print(add_birthday(args, book))
-            case "show-birthday":
-                print(show_birthday(args, book))
-            case "birthdays":
-                print(birthdays(book))
-            case "help" | "?":
-                print("""The bot helps to work with the contact book.
-                        Commands and functions:
-                        "close" | "exit" - exit the program
-                        "hello" - display a greeting
-                        "add <name> <phone_namer>" - add a phone number to the address book
-                        "change <name> <phone_namer>" - change the phone number in the address book
-                        "add-birthday <name> <DD.MM.YYYY>" - add a birthday to the address book
-                        "show-birthday <name>" - show birthday
-                        "phone <name>" - show the number
-                        "all" - show the entire address book
-                        "birthdays" - show date for congratulation
-                        "help" | "?" - show this help""")             
-            case _:
-                print("Invalid command.\nFor help enter: ?, help")
+        try:
+            command, *args = parse_input(user_input)
+            match command:
+                case "close" | "exit":
+                    print("Good bye!")
+                    break
+                
+                case "hello":
+                    print(get_random_phrase())
+                case "add":
+                    print(add_contact(args, book))
+                case "change":
+                    print(change_contact(args, book))
+                case "phone":
+                    print(show_phone(args, book))
+                case "all":
+                    print(show_all(book))
+                case "add-birthday":
+                    print(add_birthday(args, book))
+                case "show-birthday":
+                    print(show_birthday(args, book))
+                case "birthdays":
+                    print(birthdays(book))
+                case "help" | "?":
+                    print("""The bot helps to work with the contact book.
+                            Commands and functions:
+                            "close" | "exit" - exit the program
+                            "hello" - display a greeting
+                            "add <name> <phone_namer>" - add a phone number to the address book
+                            "change <name> <phone_namer>" - change the phone number in the address book
+                            "add-birthday <name> <DD.MM.YYYY>" - add a birthday to the address book
+                            "show-birthday <name>" - show birthday
+                            "phone <name>" - show the number
+                            "all" - show the entire address book
+                            "birthdays" - show date for congratulation
+                            "help" | "?" - show this help""")             
+                case _:
+                    print("Invalid command.\nFor help enter: ?, help")
+        except TypeError:
+            print (f"Invalid command.\nFor help enter: ?, help")
 
 if __name__ == "__main__":
     main()

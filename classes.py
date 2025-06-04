@@ -40,12 +40,20 @@ class Phone(Field):
         return f"{self}"
     
 class Birthday(Field):
+
+    '''
+    Не виконана вимога завдання - клас Birthday, 
+    який наслідується від класу Field. 
+    Значення зберігається в полі value. 
+    Тип - рядок формата DD.MM.YYYY. Рядок, не дата.'''
+
     def __init__(self, value):
         try:
             # datetime.strptime(value, "%d.%m.%Y")
-            super().__init__(datetime.strptime(value, "%d.%m.%Y").date())
+            value=(datetime.strptime(value, "%d.%m.%Y").date())
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
+        super().__init__(value.strftime("%d.%m.%Y"))
 
 # Клас для зберігання інформації про контакт, включаючи ім'я та список телефонів.
 class Record:
@@ -130,10 +138,16 @@ class AddressBook(UserDict):
 
         for key, value in self.data.items():
             
-            birthday_this_year = value.birthday.value.replace(year=today.year)
+            
+            if value.birthday:
+                date_format_date=datetime.strptime(value.birthday.value, "%d.%m.%Y").date()
+            else: 
+                continue
+
+            birthday_this_year = date_format_date.replace(year=today.year)
                 
             if birthday_this_year < today:
-                birthday_this_year = value.birthday.value.replace(year=today.year+1)
+                birthday_this_year = date_format_date.replace(year=today.year+1)
 
             if 0 <= (birthday_this_year - today).days <= days:
                 birthday_this_year = self.adjust_for_weekend(birthday_this_year)
