@@ -1,14 +1,15 @@
 from random import choice
 from pathlib import Path
-from classes import AddressBook,CastomError,Record
+from classes import AddressBook, CastomError, Record, Birthday
+from typing import Callable, Any, Union
 
 #Декоратор для обробки помилок
-def input_error(func):
-    def inner(*args, **kwargs):
+def input_error(func: Callable[..., Any]) -> Callable[..., Any]:
+    def inner(*args: Any, **kwargs: Any):
         try:
             return func(*args, **kwargs)
         except ValueError as e:
-            return e #"Give me correct name and phone please."
+            return e
         except FileNotFoundError:
             return "How can I help you?"
         except CastomError as e:
@@ -63,15 +64,18 @@ def show_all(book:AddressBook) -> str:
 
 #функція для вибору рандомної фрази для відповіді на hello
 @input_error
-def get_random_phrase():
+def get_random_phrase() -> str:
         current_dir = Path(__file__).parent
         with open(current_dir / "hello.txt", "r", encoding="utf-8") as file:
             phrase = file.readlines()
             return choice(phrase).strip()
 
 @input_error
-def add_birthday(args, book:AddressBook):
-    name, birthday, *_ = args
+def add_birthday(args: list[str], book: AddressBook) -> str:
+    try:
+        name, birthday, *_ = args
+    except ValueError:
+        return f"Give me name and birthday."
     name=name.lower().capitalize()
     record = book.find(name)
     message = "Contact updated."
@@ -84,7 +88,7 @@ def add_birthday(args, book:AddressBook):
     return message
 
 @input_error
-def show_birthday(args, book):
+def show_birthday(args: list[str], book: AddressBook) -> Birthday:
     name = args[0].lower().capitalize()
     result=book.get(name, None)
     if result != None:
@@ -96,7 +100,7 @@ def show_birthday(args, book):
         raise CastomError("Контакт відсутній")
 
 @input_error
-def birthdays(book):
+def birthdays(book: AddressBook) -> str:
     results=book.get_upcoming_birthdays()
     if results:
         return str(results)
@@ -104,7 +108,7 @@ def birthdays(book):
         return f'No birthdays for display'
 
 
-def main():
+def main() -> Union[str, None]:
     book = AddressBook()
     print("Welcome to the assistant bot!")
     while True:

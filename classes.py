@@ -1,23 +1,24 @@
 from collections import UserDict
 from datetime import datetime, date, timedelta
+from typing import Callable, Any, Union
 
 #клас для кастомних помилок
 class CastomError(Exception):
-    def __init__(self, message="Custom Error"):
+    def __init__(self, message :str ="Custom Error") -> None:
         self.message = message
         super().__init__(self.message)
 
 # Базовий клас для полів запису.
 class Field:
-    def __init__(self, value):
+    def __init__(self, value :Any) -> None:
         self.value = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
 # Клас для зберігання імені контакту. Обов'язкове поле.
 class Name(Field):
-    def __init__(self, value):
+    def __init__(self, value :str) -> None:
         if not value:
             raise ValueError("Ім'я не може бути порожнім.")
         super().__init__(value)
@@ -25,56 +26,51 @@ class Name(Field):
 
 # Клас для зберігання номера телефону. Має валідацію формату (10 цифр).
 class Phone(Field):
-    def __init__(self, value):
+    def __init__(self, value :str) -> None:
         if len(value)==10 and value.isdigit():
             super().__init__(value)
         else:
-            # raise ValueError(f"{ValueError}\nНе вірний формат номера")
             raise CastomError('Не вірний формат номера')
     
-    def __eq__(self, other):
+    def __eq__(self, other :object) -> bool:
+        if not isinstance(other, Phone):
+            return NotImplemented
         eq = (self.value == other.value)
         return eq
     
-    def __repr__(self): #оскільки помилки усував коли вже познайомився з repr додав його щоб не танцювати з бубном при виводі об'єкта
+    def __repr__(self) -> str:
         return f"{self}"
     
 class Birthday(Field):
 
-    '''
-    Не виконана вимога завдання - клас Birthday, 
-    який наслідується від класу Field. 
-    Значення зберігається в полі value. 
-    Тип - рядок формата DD.MM.YYYY. Рядок, не дата.'''
-
-    def __init__(self, value):
+    def __init__(self, value :str) -> None:
         try:
             # datetime.strptime(value, "%d.%m.%Y")
-            value=(datetime.strptime(value, "%d.%m.%Y").date())
+            value_in_date=(datetime.strptime(value, "%d.%m.%Y").date())
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
-        super().__init__(value.strftime("%d.%m.%Y"))
+        super().__init__(value_in_date.strftime("%d.%m.%Y"))
 
 # Клас для зберігання інформації про контакт, включаючи ім'я та список телефонів.
 class Record:
-    def __init__(self, name):
+    def __init__(self, name :str) -> None:
         self.name = Name(name)
         self.phones = []
         self.birthday = None
    
-    def add_phone(self, phone: str):
+    def add_phone(self, phone :str) -> None:
         if Phone(phone) not in self.phones:
             self.phones.append(Phone(phone))
         else:
             raise CastomError (f'{phone} is already present in the notebook for {self.name}')
 
-    def remove_phone(self, phone):
+    def remove_phone(self, phone :str) -> None:
         if Phone(phone) in self.phones:
             self.phones.remove(Phone(phone))
         else:
             raise CastomError (f'{phone} відсутній в {self.name}')
 
-    def edit_phone(self, old_phone, new_phone):
+    def edit_phone(self, old_phone :str, new_phone :str) -> None:
         if not self.find_phone(old_phone):
             raise CastomError('Is not such number for contact')
         self.add_phone(new_phone)
@@ -82,16 +78,16 @@ class Record:
     
         
 
-    def find_phone(self, phone_for_search): 
+    def find_phone(self, phone_for_search :str) -> Union[Phone, None]: 
         for item in self.phones:
             if item == Phone(phone_for_search):
                 return item
     
-    def add_birthday(self, b_date):
+    def add_birthday(self, b_date :str) -> Birthday:
         self.birthday = Birthday(b_date)
         return self.birthday
     
-    def __str__(self):
+    def __str__(self) -> str:
         if self.birthday:
             birthday=self.birthday
         else:
@@ -106,33 +102,33 @@ class Record:
 #Клас для зберігання та управління записами.
 class AddressBook(UserDict):
 
-    def add_record(self, value):
+    def add_record(self, value :Record) -> None:
         key = value.name.value
         value = value
         self.data[key] = value
 
-    def find(self, search_value):
+    def find(self, search_value :str) -> Union[Record, None]:
         return self.data.get(search_value, None)
     
-    def delete(self, delete_value):
+    def delete(self, delete_value :str) -> None:
         if delete_value in self.data.keys():
             del self.data[delete_value]
     
     @staticmethod
-    def find_next_weekday(start_date, weekday):
+    def find_next_weekday(start_date :date, weekday :int) ->date:
         days_ahead = weekday - start_date.weekday()
         if days_ahead <= 0:
             days_ahead += 7
         return start_date + timedelta(days=days_ahead)
     
     
-    def adjust_for_weekend(self, birthday):
+    def adjust_for_weekend(self, birthday :date) -> date:
         if birthday.weekday() >= 5:
             return self.find_next_weekday(birthday, 0)
         return birthday
 
     # def get_upcoming_birthdays(self, users, days=7):
-    def get_upcoming_birthdays(self, days=7):
+    def get_upcoming_birthdays(self, days :int =7) -> list[dict]:
         upcoming_birthdays = []
         today = date.today()
 
@@ -155,7 +151,7 @@ class AddressBook(UserDict):
 
         return upcoming_birthdays
     
-    def __str__(self):
+    def __str__(self) -> str:
         result = []
         for name, record in self.data.items():
             result.append(f"Address book {name}:\n {record}")
